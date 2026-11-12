@@ -2,9 +2,15 @@
   "version": 8,
   "name": "RBT-TOPO",
   "metadata": {
-    "rbt:version": "2.0.0",
+    "version:info": {
+      "schema:version": "2.1.0",
+      "style:version": "2.1.0",
+      "tileserver-gl:version": "5.7.0-pre.1",
+      "maplibre-gl-js:version": "5.24.0",
+      "maplibre-native:version": "6.4.1"
+    },
     "license:info": {
-      "data:licence": "© OpenStreetMap contributor https://www.openstreetmap.org/copyright",
+      "data:license": "© OpenStreetMap contributor https://www.openstreetmap.org/copyright",
       "style:license": {
         "licensing:disclaimer": "The visual design features of this style's layers including the sprite icons are licensed under the Creative Commons Attribution-ShareAlike 4.0 International License.",
         "licensing:url": "https://creativecommons.org/licenses/by-sa/4.0/",
@@ -14,6 +20,10 @@
     "creators:info": {
       "creators:name": "Team SACI",
       "creators:websites": "https://www.strategicaci.com/ & https://www.twelvelabs.io/ & https://www.axismaps.com/"
+    },
+    "owner:info": {
+      "owner:name": "Army Geospatial Center",
+      "owner:website": "https://www.agc.army.mil/"
     }
   },
   "sources": {
@@ -54,7 +64,51 @@
       }
     },
     {
-      "id": "builtUpArea",
+      "id": "landcover--smallScale--fill",
+      "type": "fill",
+      "source": "RBT",
+      "source-layer": "landcover_small_polygon",
+      "maxzoom": 10,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          "barren",
+          "rgba(249,237,220,1)",
+          "crop",
+          "rgba(212,229,217,1)",
+          "grass",
+          "rgba(231,235,209,1)",
+          "ice",
+          "rgba(255,255,255,1)",
+          "shrub",
+          "rgba(208,225,198,1)",
+          "rgba(190,218,205,1)"
+        ],
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          1,
+          10,
+          0
+        ]
+      }
+    },
+    {
+      "id": "builtUpArea--fill",
       "type": "fill",
       "metadata": {
         "feature:info": {
@@ -65,33 +119,6 @@
       "source": "RBT",
       "source-layer": "builtup_polygon",
       "minzoom": 4,
-      "filter": [
-        "step",
-        [
-          "zoom"
-        ],
-        [
-          "match",
-          [
-            "get",
-            "class"
-          ],
-          "ne",
-          true,
-          false
-        ],
-        8,
-        [
-          "match",
-          [
-            "get",
-            "class"
-          ],
-          "osm",
-          true,
-          false
-        ]
-      ],
       "layout": {
         "visibility": "visible"
       },
@@ -105,9 +132,7 @@
             "zoom"
           ],
           10,
-          "rgba(255,221,22,0.8)",
-          11,
-          "rgba(219,200,199,0.8)",
+          "rgba(219,200,199,1)",
           15,
           "rgba(219,200,199,0.6)"
         ],
@@ -145,62 +170,23 @@
       },
       "source": "RBT",
       "source-layer": "landcover_polygon",
-      "minzoom": 9,
+      "minzoom": 7,
       "filter": [
-        "all",
+        "match",
         [
-          "match",
-          [
-            "get",
-            "subclass"
-          ],
-          [
-            "swamp",
-            "mangrove"
-          ],
-          true,
-          [
-            "forest",
-            "wood",
-            "trees"
-          ],
-          [
-            "step",
-            [
-              "zoom"
-            ],
-            false,
-            11,
-            true
-          ],
-          "farmland",
-          [
-            "step",
-            [
-              "zoom"
-            ],
-            false,
-            12,
-            true
-          ],
-          false
+          "get",
+          "subclass"
         ],
         [
-          ">=",
-          [
-            "get",
-            "area"
-          ],
-          [
-            "step",
-            [
-              "zoom"
-            ],
-            15625000,
-            9,
-            0
-          ]
-        ]
+          "swamp",
+          "mangrove",
+          "forest",
+          "wood",
+          "trees",
+          "farmland"
+        ],
+        true,
+        false
       ],
       "layout": {
         "visibility": "visible"
@@ -217,6 +203,19 @@
           "farmland",
           "rgba(212,229,217,1)",
           "rgba(154,205,181,1)"
+        ],
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          0,
+          8,
+          1
         ]
       }
     },
@@ -439,11 +438,23 @@
       "source": "RBT",
       "source-layer": "glacier_polygon",
       "minzoom": 0,
-      "maxzoom": 8,
       "filter": [
-        "in",
-        "source",
-        "ne"
+        "all",
+        [
+          "<",
+          [
+            "zoom"
+          ],
+          8
+        ],
+        [
+          "==",
+          [
+            "get",
+            "source"
+          ],
+          "ne"
+        ]
       ],
       "paint": {
         "fill-pattern": "glacier-level1"
@@ -466,11 +477,24 @@
       },
       "source": "RBT",
       "source-layer": "glacier_polygon",
-      "minzoom": 8,
+      "minzoom": 0,
       "filter": [
-        "in",
-        "source",
-        "osm"
+        "all",
+        [
+          ">=",
+          [
+            "zoom"
+          ],
+          8
+        ],
+        [
+          "==",
+          [
+            "get",
+            "source"
+          ],
+          "osm"
+        ]
       ],
       "paint": {
         "fill-pattern": "glacier-level2"
@@ -1564,7 +1588,7 @@
       },
       "source": "RBT",
       "source-layer": "inland_water_intermittent_polygon",
-      "minzoom": 8,
+      "minzoom": 5,
       "paint": {
         "fill-pattern": "dry-drainage-level1"
       }
@@ -1631,6 +1655,143 @@
       }
     },
     {
+      "id": "bathymetry--fill",
+      "type": "fill",
+      "source": "RBT",
+      "source-layer": "bathymetry_polygon",
+      "maxzoom": 8,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          [
+            "step",
+            [
+              "get",
+              "depth"
+            ],
+            "rgba(146,201,236,1)",
+            1000,
+            "rgba(132,191,231,1)",
+            2000,
+            "rgba(118,180,224,1)",
+            3000,
+            "rgba(105,169,217,1)",
+            4000,
+            "rgba(93,158,210,1)",
+            5000,
+            "rgba(82,147,202,1)",
+            6000,
+            "rgba(72,136,194,1)",
+            7000,
+            "rgba(63,125,186,1)",
+            8000,
+            "rgba(55,115,178,1)",
+            9000,
+            "rgba(48,105,170,1)",
+            10000,
+            "rgba(42,96,162,1)"
+          ],
+          8,
+          "rgba(158,210,241,1)"
+        ]
+      }
+    },
+    {
+      "id": "bathymetry--blur",
+      "type": "line",
+      "source": "RBT",
+      "source-layer": "bathymetry_polygon",
+      "maxzoom": 8,
+      "layout": {
+        "visibility": "visible",
+        "line-join": "round",
+        "line-cap": "round",
+        "line-sort-key": [
+          "get",
+          "depth"
+        ]
+      },
+      "paint": {
+        "line-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          [
+            "step",
+            [
+              "get",
+              "depth"
+            ],
+            "rgba(146,201,236,1)",
+            1000,
+            "rgba(132,191,231,1)",
+            2000,
+            "rgba(118,180,224,1)",
+            3000,
+            "rgba(105,169,217,1)",
+            4000,
+            "rgba(93,158,210,1)",
+            5000,
+            "rgba(82,147,202,1)",
+            6000,
+            "rgba(72,136,194,1)",
+            7000,
+            "rgba(63,125,186,1)",
+            8000,
+            "rgba(55,115,178,1)",
+            9000,
+            "rgba(48,105,170,1)",
+            10000,
+            "rgba(42,96,162,1)"
+          ],
+          8,
+          "rgba(158,210,241,1)"
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          2,
+          2,
+          6,
+          10
+        ],
+        "line-blur": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          2,
+          2,
+          6,
+          10
+        ]
+      }
+    },
+    {
       "id": "inlandWaterbody--perennial",
       "type": "fill",
       "metadata": {
@@ -1679,7 +1840,7 @@
       "source": "RBT",
       "source-layer": "landcover_polygon",
       "minzoom": 4,
-      "maxzoom": 9,
+      "maxzoom": 8,
       "filter": [
         "all",
         [
@@ -1703,21 +1864,26 @@
           ],
           true,
           false
-        ],
-        [
-          ">=",
-          [
-            "get",
-            "area"
-          ],
-          15625000
         ]
       ],
       "layout": {
         "visibility": "visible"
       },
       "paint": {
-        "fill-pattern": "bog-marsh-level1"
+        "fill-pattern": "bog-marsh-level1",
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          1,
+          8,
+          0
+        ]
       }
     },
     {
@@ -1731,7 +1897,7 @@
       },
       "source": "RBT",
       "source-layer": "landcover_polygon",
-      "minzoom": 11,
+      "minzoom": 7,
       "filter": [
         "match",
         [
@@ -1769,7 +1935,21 @@
           "reef",
           "rgba(138,186,212,1)",
           "rgba(51,51,51,0.2)"
-        ]
+        ],
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          0,
+          8,
+          1
+        ],
+        "fill-antialias": false
       }
     },
     {
@@ -1783,7 +1963,7 @@
       },
       "source": "RBT",
       "source-layer": "landcover_polygon",
-      "minzoom": 11,
+      "minzoom": 7,
       "filter": [
         "match",
         [
@@ -1825,6 +2005,19 @@
           -1,
           18,
           -3
+        ],
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          0,
+          8,
+          1
         ]
       }
     },
@@ -1869,6 +2062,13 @@
       "filter": [
         "all",
         [
+          "<",
+          [
+            "zoom"
+          ],
+          9
+        ],
+        [
           "match",
           [
             "get",
@@ -1891,33 +2091,11 @@
             "unknown_wetland",
             "mangrove",
             "rice",
-            "paddy"
-          ],
-          [
-            "step",
-            [
-              "zoom"
-            ],
-            false,
-            9,
-            true
-          ],
-          [
+            "paddy",
             "grassland",
             "meadow",
             "orchard",
-            "vineyard"
-          ],
-          [
-            "step",
-            [
-              "zoom"
-            ],
-            false,
-            11,
-            true
-          ],
-          [
+            "vineyard",
             "beach",
             "forest",
             "wood",
@@ -1937,26 +2115,219 @@
               "zoom"
             ],
             false,
-            12,
+            7,
             true
           ],
           false
+        ]
+      ],
+      "layout": {
+        "fill-sort-key": [
+          "to-number",
+          [
+            "concat",
+            "-",
+            [
+              "get",
+              "area"
+            ]
+          ]
         ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-pattern": [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          [
+            "beach",
+            "dune",
+            "dune_system",
+            "sand"
+          ],
+          "sand-level1",
+          [
+            "grassland",
+            "meadow",
+            "grass"
+          ],
+          "grassland-tropical-level1",
+          [
+            "forest",
+            "wood",
+            "trees"
+          ],
+          [
+            "match",
+            [
+              "get",
+              "leaf_cycle"
+            ],
+            "deciduous",
+            "forest-wood-deciduous-level1",
+            "evergreen",
+            "forest-wood-evergreen-level1",
+            "mixed",
+            "forest-wood-mixed-level1",
+            ""
+          ],
+          "mangrove",
+          "mangrove-level1",
+          [
+            "rice",
+            "paddy"
+          ],
+          "rice-level1",
+          "farmland",
+          "cropland-level1",
+          "orchard",
+          "orchard-level1",
+          [
+            "scrub",
+            "heath",
+            "fell"
+          ],
+          "brush-thicket-level1",
+          "tidalflat",
+          "asphalt-lake-level1-90deg",
+          "vineyard",
+          "vineyard-level1",
+          [
+            "shoal",
+            "shingle"
+          ],
+          "gravel-moraine-level1",
+          "bog-marsh-level1"
+        ],
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          [
+            "match",
+            [
+              "get",
+              "subclass"
+            ],
+            [
+              "dune",
+              "dune_system",
+              "sand"
+            ],
+            1,
+            0
+          ],
+          8,
+          1
+        ]
+      }
+    },
+    {
+      "id": "landcover--fill--pattern--level2",
+      "type": "fill",
+      "metadata": {
+        "feature:info": {
+          "feature:name": [
+            "Bog",
+            "Cropland",
+            "Forest",
+            "Grassland",
+            "Marsh",
+            "Orchard",
+            "Rice Field",
+            "Sand Dunes",
+            "Swamp",
+            "Brush",
+            "Tidal Water",
+            "Vineyard"
+          ],
+          "feature:code": [
+            "BH015",
+            "EA010",
+            "EC015",
+            "EB010",
+            "ED010",
+            "EA040",
+            "BH135",
+            "DB170",
+            "ED020",
+            "EB070",
+            "BA040",
+            "EA050"
+          ]
+        }
+      },
+      "source": "RBT",
+      "source-layer": "landcover_polygon",
+      "minzoom": 4,
+      "filter": [
+        "all",
         [
           ">=",
           [
+            "zoom"
+          ],
+          9
+        ],
+        [
+          "match",
+          [
             "get",
-            "area"
+            "subclass"
+          ],
+          [
+            "dune",
+            "dune_system",
+            "sand"
+          ],
+          true,
+          [
+            "bog",
+            "marsh",
+            "reedbed",
+            "saltmarsh",
+            "swamp",
+            "wet_meadow",
+            "wetland",
+            "unknown_wetland",
+            "mangrove",
+            "rice",
+            "paddy",
+            "grassland",
+            "meadow",
+            "orchard",
+            "vineyard",
+            "beach",
+            "forest",
+            "wood",
+            "trees",
+            "grass",
+            "farmland",
+            "tidalflat",
+            "scrub",
+            "heath",
+            "fell",
+            "shoal",
+            "shingle"
           ],
           [
             "step",
             [
               "zoom"
             ],
-            15625000,
-            9,
-            0
-          ]
+            false,
+            7,
+            true
+          ],
+          false
         ]
       ],
       "layout": {
@@ -2039,6 +2410,32 @@
           ],
           "gravel-moraine-level1",
           "bog-marsh-level1"
+        ],
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          [
+            "match",
+            [
+              "get",
+              "subclass"
+            ],
+            [
+              "dune",
+              "dune_system",
+              "sand"
+            ],
+            1,
+            0
+          ],
+          8,
+          1
         ]
       }
     },
@@ -4002,18 +4399,16 @@
           false
         ],
         [
-          "match",
+          "!=",
           [
-            "get",
-            "class"
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
           ],
-          [
-            "abandoned:aeroway",
-            "disused:aeroway",
-            "construction"
-          ],
-          true,
-          false
+          "intact"
         ],
         [
           "!=",
@@ -4079,18 +4474,16 @@
           false
         ],
         [
-          "match",
+          "!=",
           [
-            "get",
-            "class"
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
           ],
-          [
-            "abandoned:aeroway",
-            "disused:aeroway",
-            "construction"
-          ],
-          true,
-          false
+          "intact"
         ],
         [
           "!=",
@@ -4136,9 +4529,29 @@
       "source-layer": "runway_line",
       "minzoom": 11,
       "filter": [
-        "in",
-        "subclass",
-        "taxiway"
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          "taxiway",
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
+          ],
+          "intact"
+        ]
       ],
       "layout": {
         "visibility": "visible",
@@ -4301,9 +4714,29 @@
       "source-layer": "runway_line",
       "minzoom": 11,
       "filter": [
-        "in",
-        "subclass",
-        "taxiway"
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          "taxiway",
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
+          ],
+          "intact"
+        ]
       ],
       "layout": {
         "visibility": "visible",
@@ -15767,215 +16200,6 @@
       }
     },
     {
-      "id": "wetland--label",
-      "type": "symbol",
-      "metadata": {
-        "feature:info": {
-          "feature:name": [
-            "Bog",
-            "Marsh",
-            "Swamp"
-          ],
-          "feature:code": [
-            "BH015",
-            "ED010",
-            "ED020"
-          ]
-        }
-      },
-      "source": "RBT",
-      "source-layer": "landcover_label",
-      "minzoom": 6,
-      "maxzoom": 9,
-      "filter": [
-        "all",
-        [
-          "match",
-          [
-            "get",
-            "subclass"
-          ],
-          [
-            "bog",
-            "marsh",
-            "mangrove",
-            "reedbed",
-            "saltmarsh",
-            "swamp",
-            "wet_meadow",
-            "wetland",
-            "unknown_wetland"
-          ],
-          true,
-          false
-        ],
-        [
-          "step",
-          [
-            "zoom"
-          ],
-          [
-            "any",
-            [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                1600000000
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
-            ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              3200000000
-            ]
-          ],
-          8,
-          [
-            "any",
-            [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                400000000
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
-            ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              800000000
-            ]
-          ]
-        ]
-      ],
-      "layout": {
-        "symbol-sort-key": [
-          "to-number",
-          [
-            "concat",
-            "-",
-            [
-              "get",
-              "area"
-            ]
-          ]
-        ],
-        "text-field": "{name}",
-        "text-font": [
-          "NGATopo_Cn_ita",
-          "NotoSansItalic"
-        ],
-        "text-letter-spacing": 0.05,
-        "text-max-width": 6,
-        "text-size": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          6,
-          [
-            "max",
-            11,
-            [
-              "sqrt",
-              [
-                "/",
-                [
-                  "get",
-                  "area"
-                ],
-                500000000
-              ]
-            ]
-          ],
-          16,
-          [
-            "max",
-            14,
-            [
-              "sqrt",
-              [
-                "/",
-                [
-                  "get",
-                  "area"
-                ],
-                500000000
-              ]
-            ]
-          ]
-        ],
-        "visibility": "visible",
-        "text-transform": "uppercase",
-        "symbol-placement": "point"
-      },
-      "paint": {
-        "text-color": "rgba(0,0,0,1)",
-        "text-halo-color": "rgba(255,255,255,0.8)",
-        "text-halo-width": [
-          "step",
-          [
-            "zoom"
-          ],
-          1,
-          8,
-          1.3
-        ]
-      }
-    },
-    {
       "id": "landcover--label",
       "type": "symbol",
       "metadata": {
@@ -16021,9 +16245,10 @@
             "get",
             "subclass"
           ],
-          "sand",
-          true,
           [
+            "dune",
+            "dune_system",
+            "sand",
             "bog",
             "marsh",
             "mangrove",
@@ -16033,19 +16258,6 @@
             "wet_meadow",
             "wetland",
             "unknown_wetland",
-            "dune",
-            "dune_system"
-          ],
-          [
-            "step",
-            [
-              "zoom"
-            ],
-            false,
-            9,
-            true
-          ],
-          [
             "forest",
             "wood",
             "trees",
@@ -16054,18 +16266,7 @@
             "orchard",
             "reef",
             "vineyard",
-            "bare_rock"
-          ],
-          [
-            "step",
-            [
-              "zoom"
-            ],
-            false,
-            11,
-            true
-          ],
-          [
+            "bare_rock",
             "grass",
             "farmland",
             "beach",
@@ -16076,15 +16277,7 @@
             "shoal",
             "shingle"
           ],
-          [
-            "step",
-            [
-              "zoom"
-            ],
-            false,
-            12,
-            true
-          ],
+          true,
           false
         ],
         [
@@ -16093,479 +16286,126 @@
             "zoom"
           ],
           [
-            "any",
+            "all",
             [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                1600000000
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
-            ],
-            [
-              ">=",
+              "match",
               [
                 "get",
-                "area_part"
+                "subclass"
               ],
-              3200000000
+              [
+                "dune",
+                "dune_system",
+                "sand",
+                "bog",
+                "marsh",
+                "mangrove",
+                "reedbed",
+                "saltmarsh",
+                "swamp",
+                "wet_meadow",
+                "wetland",
+                "unknown_wetland"
+              ],
+              true,
+              false
+            ],
+            [
+              "<=",
+              [
+                "get",
+                "z_level"
+              ],
+              4
+            ]
+          ],
+          7,
+          [
+            "all",
+            [
+              "match",
+              [
+                "get",
+                "subclass"
+              ],
+              [
+                "dune",
+                "dune_system",
+                "sand",
+                "bog",
+                "marsh",
+                "mangrove",
+                "reedbed",
+                "saltmarsh",
+                "swamp",
+                "wet_meadow",
+                "wetland",
+                "unknown_wetland"
+              ],
+              true,
+              false
+            ],
+            [
+              "<=",
+              [
+                "get",
+                "z_level"
+              ],
+              5
             ]
           ],
           8,
           [
-            "any",
+            "<=",
             [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                400000000
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
+              "get",
+              "z_level"
             ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              800000000
-            ]
+            6
           ],
           9,
           [
-            "any",
+            "<=",
             [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                100000000
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
+              "get",
+              "z_level"
             ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              200000000
-            ]
+            7
           ],
           10,
           [
-            "any",
+            "<=",
             [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                25000000
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
+              "get",
+              "z_level"
             ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              50000000
-            ]
+            8
           ],
           11,
           [
-            "any",
-            [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                6250000
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
-            ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              25000000
-            ]
-          ],
-          12,
-          [
-            "any",
-            [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                1562500
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
-            ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              6250000
-            ]
-          ],
-          13,
-          [
-            "any",
-            [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                390625
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
-            ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              1562500
-            ]
-          ],
-          14,
-          [
-            "any",
-            [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                97656
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
-            ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              390625
-            ]
-          ],
-          15,
-          [
-            "any",
-            [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                24414
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
-            ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              97656
-            ]
-          ],
-          16,
-          [
-            "any",
-            [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                6103
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
-            ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              24412
-            ]
-          ],
-          17,
-          [
-            "any",
-            [
-              "all",
-              [
-                ">=",
-                [
-                  "get",
-                  "area"
-                ],
-                1526
-              ],
-              [
-                "any",
-                [
-                  "==",
-                  [
-                    "get",
-                    "rank"
-                  ],
-                  1
-                ],
-                [
-                  "!",
-                  [
-                    "has",
-                    "rank"
-                  ]
-                ]
-              ]
-            ],
-            [
-              ">=",
-              [
-                "get",
-                "area_part"
-              ],
-              6104
-            ]
-          ],
-          18,
-          [
-            ">",
+            "<=",
             [
               "get",
-              "area"
+              "z_level"
             ],
-            0
-          ]
+            9
+          ],
+          12,
+          true
         ]
       ],
       "layout": {
         "symbol-sort-key": [
-          "to-number",
+          "-",
           [
-            "concat",
-            "-",
-            [
-              "get",
-              "area"
-            ]
+            "get",
+            "area"
           ]
         ],
-        "text-field": "{name}",
+        "text-field": [
+          "get",
+          "name"
+        ],
         "text-font": [
           "match",
           [
@@ -16600,7 +16440,7 @@
             ]
           ]
         ],
-        "text-letter-spacing": 0.05,
+        "text-letter-spacing": 0.1,
         "text-max-width": 6,
         "text-size": [
           "interpolate",
@@ -16624,9 +16464,9 @@
               ]
             ],
             0,
-            11,
+            9,
             150000,
-            18
+            14
           ],
           16,
           [
@@ -16678,22 +16518,30 @@
       },
       "paint": {
         "text-color": [
-          "match",
+          "step",
           [
-            "get",
-            "subclass"
+            "zoom"
           ],
+          "rgba(0,0,0,1)",
+          8,
           [
-            "bog",
-            "marsh",
-            "reedbed",
-            "saltmarsh",
-            "wet_meadow",
-            "wetland",
-            "unknown_wetland"
-          ],
-          "rgba(0,160,223,1)",
-          "rgba(0,0,0,1)"
+            "match",
+            [
+              "get",
+              "subclass"
+            ],
+            [
+              "bog",
+              "marsh",
+              "reedbed",
+              "saltmarsh",
+              "wet_meadow",
+              "wetland",
+              "unknown_wetland"
+            ],
+            "rgba(0,160,223,1)",
+            "rgba(0,0,0,1)"
+          ]
         ],
         "text-halo-color": "rgba(255,255,255,0.8)",
         "text-halo-width": [
@@ -17105,8 +16953,29 @@
           "name"
         ],
         "text-font": [
-          "NGATopo_Cn_ita",
-          "NotoSansItalic"
+          "match",
+          [
+            "get",
+            "desig_cd"
+          ],
+          [
+            "OCN",
+            "SEA"
+          ],
+          [
+            "literal",
+            [
+              "NGATopo_ita",
+              "NotoSansItalic"
+            ]
+          ],
+          [
+            "literal",
+            [
+              "NGATopo_Cn_ita",
+              "NotoSansItalic"
+            ]
+          ]
         ],
         "text-letter-spacing": [
           "step",
@@ -17120,7 +16989,7 @@
               "desig_cd"
             ],
             "OCN",
-            0.1,
+            0.2,
             0.05
           ],
           5,
@@ -17188,11 +17057,24 @@
           "OCN",
           "uppercase",
           "none"
-        ]
+        ],
+        "visibility": "visible"
       },
       "paint": {
-        "text-color": "rgba(0,160,223,1)",
-        "text-halo-color": "rgba(158,210,241,0.6)",
+        "text-color": "rgba(20, 100, 148, 1)",
+        "text-halo-color": [
+          "match",
+          [
+            "get",
+            "desig_cd"
+          ],
+          [
+            "OCN",
+            "SEA"
+          ],
+          "rgba(255,255,255,0)",
+          "rgba(255,255,255,0)"
+        ],
         "text-halo-width": 1.3
       }
     },
@@ -17339,7 +17221,8 @@
           ],
           16,
           14
-        ]
+        ],
+        "visibility": "visible"
       },
       "paint": {
         "text-color": "rgba(0,160,223,1)",
@@ -17919,14 +17802,16 @@
           false
         ],
         [
-          "match",
+          "==",
           [
-            "get",
-            "class"
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
           ],
-          "aeroway",
-          true,
-          false
+          "intact"
         ],
         [
           "!=",
@@ -17993,14 +17878,16 @@
           false
         ],
         [
-          "match",
+          "==",
           [
-            "get",
-            "class"
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
           ],
-          "aeroway",
-          true,
-          false
+          "intact"
         ],
         [
           "!=",
@@ -18052,14 +17939,16 @@
           false
         ],
         [
-          "match",
+          "==",
           [
-            "get",
-            "class"
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
           ],
-          "aeroway",
-          true,
-          false
+          "intact"
         ]
       ],
       "layout": {
@@ -27281,14 +27170,16 @@
           false
         ],
         [
-          "match",
+          "==",
           [
-            "get",
-            "class"
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
           ],
-          "aeroway",
-          true,
-          false
+          "intact"
         ]
       ],
       "layout": {
@@ -30706,12 +30597,17 @@
       "filter": [
         "all",
         [
-          "!=",
+          "match",
           [
             "get",
             "capital"
           ],
-          2
+          [
+            1,
+            2
+          ],
+          false,
+          true
         ],
         [
           "any",
@@ -31016,12 +30912,17 @@
       "filter": [
         "all",
         [
-          "!=",
+          "match",
           [
             "get",
             "capital"
           ],
-          2
+          [
+            1,
+            2
+          ],
+          false,
+          true
         ],
         [
           "match",
@@ -31193,8 +31094,9 @@
       "filter": [
         "all",
         [
-          "!=",
+          "!in",
           "capital",
+          1,
           2
         ],
         [
@@ -31641,8 +31543,9 @@
       "filter": [
         "all",
         [
-          "!=",
+          "!in",
           "capital",
+          1,
           2
         ],
         [
@@ -31778,8 +31681,9 @@
       "filter": [
         "all",
         [
-          "!=",
+          "!in",
           "capital",
+          1,
           2
         ],
         [
@@ -31842,6 +31746,173 @@
         "text-font": [
           "NGATopo_Cn_bld",
           "NotoSansBold"
+        ],
+        "text-justify": "auto",
+        "text-max-width": 8,
+        "text-radial-offset": 0.2,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          9,
+          10,
+          24,
+          13,
+          30
+        ],
+        "text-transform": "uppercase",
+        "text-variable-anchor": {
+          "stops": [
+            [
+              0,
+              [
+                "bottom-left",
+                "top-left",
+                "bottom-right",
+                "top-right",
+                "left",
+                "right",
+                "bottom",
+                "top"
+              ]
+            ],
+            [
+              8,
+              [
+                "center"
+              ]
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "rgba(0,0,0,1)",
+        "text-halo-color": "rgba(255,255,255,0.8)",
+        "text-halo-width": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          8,
+          1.5
+        ]
+      }
+    },
+    {
+      "id": "city--capital-secondary--label",
+      "type": "symbol",
+      "metadata": {
+        "feature:info": {
+          "feature:name": "Built Up Area",
+          "feature:code": "AL020"
+        }
+      },
+      "source": "RBT",
+      "source-layer": "place_labels",
+      "minzoom": 3,
+      "maxzoom": 13,
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "capital"
+          ],
+          1,
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "city",
+            "town",
+            "village",
+            "hamlet"
+          ],
+          true,
+          false
+        ],
+        [
+          "<=",
+          [
+            "get",
+            "rank"
+          ],
+          [
+            "step",
+            [
+              "zoom"
+            ],
+            2,
+            4,
+            4,
+            5,
+            6,
+            6,
+            7,
+            7,
+            99
+          ]
+        ]
+      ],
+      "layout": {
+        "symbol-sort-key": [
+          "+",
+          [
+            "*",
+            [
+              "get",
+              "rank"
+            ],
+            10
+          ],
+          [
+            "get",
+            "class_rank"
+          ]
+        ],
+        "icon-image": [
+          "step",
+          [
+            "zoom"
+          ],
+          "circle-dot-6",
+          5,
+          "circle-dot-7",
+          6,
+          "circle-dot-8",
+          7,
+          "circle-dot-9",
+          8,
+          ""
+        ],
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name_en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "NGATopo_Cn_reg",
+          "NotoSansRegular"
         ],
         "text-justify": "auto",
         "text-max-width": 8,
@@ -32693,9 +32764,5 @@
       }
     }
   ],
-  "owner": {
-    "owner:name": "Army Geospatial Center",
-    "owner:website": "https://www.agc.army.mil/"
-  },
   "id": "RBT-TOPO-3395"
 }

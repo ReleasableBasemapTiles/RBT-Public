@@ -2,9 +2,15 @@
   "version": 8,
   "name": "RBT-BROWN",
   "metadata": {
-    "rbt:version": "2.0.0",
+    "version:info": {
+      "schema:version": "2.1.0",
+      "style:version": "2.1.0",
+      "tileserver-gl:version": "5.7.0-pre.1",
+      "maplibre-gl-js:version": "5.24.0",
+      "maplibre-native:version": "6.4.1"
+    },
     "license:info": {
-      "data:licence": "© OpenStreetMap contributor https://www.openstreetmap.org/copyright",
+      "data:license": "© OpenStreetMap contributor https://www.openstreetmap.org/copyright",
       "style:license": {
         "licensing:disclaimer": "The visual design features of this style's layers including the sprite icons are licensed under the Creative Commons Attribution-ShareAlike 4.0 International License.",
         "licensing:url": "https://creativecommons.org/licenses/by-sa/4.0/",
@@ -14,6 +20,10 @@
     "creators:info": {
       "creators:name": "Team SACI",
       "creators:websites": "https://www.strategicaci.com/ & https://www.lazarusai.com/ & https://www.axismaps.com/"
+    },
+    "owner:info": {
+      "owner:name": "Army Geospatial Center",
+      "owner:website": "https://www.agc.army.mil/"
     }
   },
   "sources": {
@@ -42,7 +52,7 @@
       }
     },
     {
-      "id": "builtUpArea",
+      "id": "builtUpArea--fill",
       "type": "fill",
       "metadata": {
         "feature:info": {
@@ -1322,7 +1332,7 @@
       },
       "source": "RBT",
       "source-layer": "inland_water_intermittent_polygon",
-      "minzoom": 8,
+      "minzoom": 5,
       "paint": {
         "fill-color": "rgba(255, 255, 255, 0.5)"
       }
@@ -1338,7 +1348,7 @@
       },
       "source": "RBT",
       "source-layer": "inland_water_intermittent_polygon",
-      "minzoom": 8,
+      "minzoom": 5,
       "paint": {
         "fill-pattern": [
           "step",
@@ -1805,9 +1815,29 @@
       "source-layer": "runway_line",
       "minzoom": 11,
       "filter": [
-        "in",
-        "subclass",
-        "taxiway"
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          "taxiway",
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
+          ],
+          "intact"
+        ]
       ],
       "layout": {
         "visibility": "visible",
@@ -1900,14 +1930,16 @@
           false
         ],
         [
-          "match",
+          "==",
           [
-            "get",
-            "class"
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
           ],
-          "aeroway",
-          true,
-          false
+          "intact"
         ],
         [
           "!=",
@@ -1972,14 +2004,16 @@
           false
         ],
         [
-          "match",
+          "==",
           [
-            "get",
-            "class"
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
           ],
-          "aeroway",
-          true,
-          false
+          "intact"
         ]
       ],
       "layout": {
@@ -13856,14 +13890,16 @@
           false
         ],
         [
-          "match",
+          "==",
           [
-            "get",
-            "class"
+            "coalesce",
+            [
+              "get",
+              "lifecycle_type"
+            ],
+            "intact"
           ],
-          "aeroway",
-          true,
-          false
+          "intact"
         ]
       ],
       "layout": {
@@ -16018,12 +16054,17 @@
       "filter": [
         "all",
         [
-          "!=",
+          "match",
           [
             "get",
             "capital"
           ],
-          2
+          [
+            1,
+            2
+          ],
+          false,
+          true
         ],
         [
           "any",
@@ -16553,7 +16594,10 @@
             "get",
             "capital"
           ],
-          2,
+          [
+            1,
+            2
+          ],
           false,
           true
         ],
@@ -16729,7 +16773,10 @@
             "get",
             "capital"
           ],
-          2,
+          [
+            1,
+            2
+          ],
           false,
           true
         ],
@@ -17245,7 +17292,10 @@
             "get",
             "capital"
           ],
-          2,
+          [
+            1,
+            2
+          ],
           false,
           true
         ],
@@ -17371,6 +17421,186 @@
         "visibility": "visible"
       },
       "paint": {
+        "text-color": [
+          "step",
+          [
+            "zoom"
+          ],
+          "rgba(45,45,45,1)",
+          12,
+          "rgba(110,110,110,1)"
+        ],
+        "text-halo-color": "rgba(255,255,255,0.8)",
+        "text-halo-width": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          8,
+          1.5
+        ]
+      }
+    },
+    {
+      "id": "city--pplc-secondary--label",
+      "type": "symbol",
+      "metadata": {
+        "feature:info": {
+          "feature:name": "Built Up Area",
+          "feature:code": "AL020"
+        }
+      },
+      "source": "RBT",
+      "source-layer": "place_labels",
+      "minzoom": 3,
+      "maxzoom": 13,
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "capital"
+          ],
+          1,
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "city",
+            "town",
+            "village",
+            "hamlet"
+          ],
+          true,
+          false
+        ],
+        [
+          "<=",
+          [
+            "get",
+            "rank"
+          ],
+          [
+            "step",
+            [
+              "zoom"
+            ],
+            2,
+            4,
+            4,
+            5,
+            6,
+            6,
+            7,
+            7,
+            99
+          ]
+        ]
+      ],
+      "layout": {
+        "symbol-sort-key": [
+          "+",
+          [
+            "*",
+            [
+              "get",
+              "rank"
+            ],
+            10
+          ],
+          [
+            "get",
+            "class_rank"
+          ]
+        ],
+        "icon-image": [
+          "step",
+          [
+            "zoom"
+          ],
+          "circle-stroked",
+          8,
+          ""
+        ],
+        "icon-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          0.5,
+          10,
+          1
+        ],
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name_en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "NGATopo_reg",
+          "NotoSansRegular"
+        ],
+        "text-justify": "auto",
+        "text-max-width": 8,
+        "text-radial-offset": 0.4,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          10,
+          13,
+          30
+        ],
+        "text-variable-anchor": {
+          "stops": [
+            [
+              0,
+              [
+                "bottom-left",
+                "top-left",
+                "bottom-right",
+                "top-right",
+                "left",
+                "right",
+                "bottom",
+                "top"
+              ]
+            ],
+            [
+              8,
+              [
+                "center"
+              ]
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-opacity": 1,
         "text-color": [
           "step",
           [
@@ -18673,9 +18903,5 @@
       }
     }
   ],
-  "owner": {
-    "owner:name": "Army Geospatial Center",
-    "owner:website": "https://www.agc.army.mil/"
-  },
   "id": "RBT-CANVAS-BROWN"
 }
