@@ -1,0 +1,124 @@
+# Publish a styles release: copy the six RBT styles from a
+# ReleasableBasemapTiles/styles release tag into RBT_<x>_<y>_<z>/style/,
+# replace current-release/styles/ with the same files, and open a pull
+# request. Run it after the styles repo publishes a release:
+#
+#   gh workflow run publish-styles.yml -R ReleasableBasemapTiles/RBT-Public -f version=2.1.0
+#
+# Standards documents link to this repo, so the folder layout stays as it is:
+# versioned folders use style/, current-release uses styles/.
+#
+# The copy skips svg folders and rewrites each style.json's sources, sprite
+# and glyphs for TileServer GL (mbtiles://{RBT}, {styleJsonFolder}/sprite,
+# {fontstack}/{range}.pbf), with the same script rbt-local uses.
+#
+# styles is private, so GITHUB_TOKEN cannot read it. The checkout uses a
+# read-only deploy key on ReleasableBasemapTiles/styles, with its private
+# half in this repo's secret STYLES_DEPLOY_KEY. It is a separate key from
+# rbt-local's, so either can be revoked on its own. The pull request uses
+# GITHUB_TOKEN, which needs "Allow GitHub Actions to create and approve pull
+# requests" enabled in this repo's Actions settings.
+
+name: Publish styles
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "styles release to publish, without the v (for example 2.1.0)"
+        required: true
+        type: string
+      update_current:
+        description: "Also replace current-release/styles with this version"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: publish-styles
+  cancel-in-progress: false
+
+env:
+  STYLES: RBT-BROWN RBT-DARK RBT-GRAY RBT-LIGHT RBT-OVERLAY RBT-TOPO
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::version must look like 2.1.0, got '$VERSION'"
+            exit 1
+          fi
+          echo "FOLDER=RBT_${VERSION//./_}" >> "$GITHUB_ENV"
+
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Checkout styles release
+        uses: actions/checkout@v7
+        with:
+          repository: ReleasableBasemapTiles/styles
+          ref: v${{ inputs.version }}
+          path: upstream-styles
+          ssh-key: ${{ secrets.STYLES_DEPLOY_KEY }}
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: |
+            styles/RBT-BROWN
+            styles/RBT-DARK
+            styles/RBT-GRAY
+            styles/RBT-LIGHT
+            styles/RBT-OVERLAY
+            styles/RBT-TOPO
+          sparse-checkout-cone-mode: true
+
+      # The script syncs only style folders that already exist in the
+      # destination, so start from one empty folder per style. Rebuilding
+      # from scratch makes a re-run for the same version safe.
+      - name: Build versioned folder
+        run: |
+          rm -rf "$FOLDER/style"
+          for style in $STYLES; do
+            mkdir -p "$FOLDER/style/$style"
+          done
+          python3 .github/scripts/sync-styles.py upstream-styles/styles "$FOLDER/style"
+
+      - name: Update current-release
+        if: inputs.update_current
+        run: |
+          rm -rf current-release/styles
+          mkdir -p current-release
+          cp -R "$FOLDER/style" current-release/styles
+
+      - name: Remove styles checkout
+        run: rm -rf upstream-styles
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: publish-styles/v${{ inputs.version }}
+          delete-branch: true
+          add-paths: |
+            ${{ env.FOLDER }}
+            current-release
+          commit-message: "chore(styles): publish styles v${{ inputs.version }}"
+          title: "chore(styles): publish styles v${{ inputs.version }}"
+          body: |
+            ## Summary
+            - Publish the six RBT styles from `ReleasableBasemapTiles/styles` tag `v${{ inputs.version }}` to `${{ env.FOLDER }}/style/`
+            - Replace `current-release/styles/`: ${{ inputs.update_current }}
+            - Skip svg folders and rewrite `style.json` sources, sprite and glyphs for TileServer GL
+
+            ## Test plan
+            - [ ] Each `style.json` uses `mbtiles://{RBT}`, `mbtiles://{TERRAIN}` (if it has a TERRAIN source), `{styleJsonFolder}/sprite` and `{fontstack}/{range}.pbf`
+            - [ ] No svg folders were added
+            - [ ] `current-release/styles/` matches `${{ env.FOLDER }}/style/` (if replaced)
